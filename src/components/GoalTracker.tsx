@@ -188,6 +188,37 @@ export default function GoalTracker() {
     );
   };
 
+  const exportData = () => {
+    const data = JSON.stringify(goals, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `goal-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const imported = JSON.parse(ev.target?.result as string);
+        if (Array.isArray(imported)) {
+          await saveGoals(imported);
+          setGoals(imported);
+          if (imported.length > 0) setSelectedGoal(imported[0]);
+        }
+      } catch (err) {
+        alert('Invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-black px-4 py-4 sm:px-6 lg:px-8">
@@ -195,6 +226,11 @@ export default function GoalTracker() {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Goal Tracker</h1>
             <div className="flex gap-2">
+              <button onClick={exportData} className="rounded border border-black px-3 py-1.5 text-sm font-medium hover:bg-black hover:text-white transition-colors">Export</button>
+              <label className="cursor-pointer rounded border border-black px-3 py-1.5 text-sm font-medium hover:bg-black hover:text-white transition-colors">
+                Import
+                <input type="file" accept=".json" onChange={importData} className="hidden" />
+              </label>
               <button onClick={() => setShowHelp(true)} className="rounded border border-black px-3 py-1.5 text-sm font-medium hover:bg-black hover:text-white transition-colors">Help</button>
               <button onClick={() => setShowAddModal(true)} className="rounded bg-black px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors">+ Add Goal</button>
             </div>
