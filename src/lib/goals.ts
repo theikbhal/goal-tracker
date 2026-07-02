@@ -1,5 +1,5 @@
 import { Goal, WeekEntry, DayEntry, GoalTemplate } from './types';
-import { supabase } from './supabase';
+import { getSupabase } from './supabase';
 
 export const GOAL_TEMPLATES: GoalTemplate[] = [
   { name: 'Zikir Daily', target: 12000, unit: 'count', icon: '🕌' },
@@ -153,67 +153,85 @@ export function createGoalFromTemplate(template: GoalTemplate, startDate?: strin
   };
 }
 
-// Supabase storage
+// Save to Supabase + localStorage
 export async function saveGoals(goals: Goal[]): Promise<void> {
-  try {
-    for (const goal of goals) {
-      const { error } = await supabase
-        .from('goals')
-        .upsert({
-          id: goal.id,
-          name: goal.name,
-          target: goal.target,
-          unit: goal.unit,
-          start_date: goal.startDate,
-          weekly_progress: goal.weeklyProgress,
-          daily_progress: goal.dailyProgress,
-          month_notes: goal.monthNotes,
-          notes: goal.notes,
-        }, { onConflict: 'id' });
-      if (error) throw error;
-    }
-  } catch (e) {
-    // Fallback to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('goal-tracker-goals', JSON.stringify(goals));
+  // Always save to localStorage first
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('goal-tracker-goals', JSON.stringify(goals));
+  }
+  // Try Supabase in background
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      for (const goal of goals) {
+        const { error } = await sb
+          .from('goals')
+          .upsert({
+            id: goal.id,
+            name: goal.name,
+            target: goal.target,
+            unit: goal.unit,
+            start_date: goal.startDate,
+            weekly_progress: goal.weeklyProgress,
+            daily_progress: goal.dailyProgress,
+            month_notes: goal.monthNotes,
+            notes: goal.notes,
+          }, { onConflict: 'id' });
+        if (error) console.error('Supabase save error:', error);
+      }
+    } catch (e) {
+      console.error('Supabase save failed:', e);
     }
   }
 }
 
+// Load from Supabase, fallback to localStorage
 export async function loadGoals(): Promise<Goal[]> {
-  try {
-    const { data, error } = await supabase
-      .from('goals')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    if (data && data.length > 0) {
-      return data.map((row: any) => ({
-        id: row.id,
-        name: row.name,
-        target: row.target,
-        unit: row.unit,
-        startDate: row.start_date,
-        weeklyProgress: row.weekly_progress || [],
-        dailyProgress: row.daily_progress || [],
-        monthNotes: row.month_notes || {},
-        notes: row.notes || '',
-      }));
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('goals')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data && data.length > 0) {
+        const goals = data.map((row: any) => ({
+          id: row.id,
+          name: row.name,
+          target: row.target,
+          unit: row.unit,
+          startDate: row.start_date,
+          weeklyProgress: row.weekly_progress || [],
+          dailyProgress: row.daily_progress || [],
+          monthNotes: row.month_notes || {},
+          notes: row.notes || '',
+        }));
+        // Sync to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('goal-tracker-goals', JSON.stringify(goals));
+        }
+        return goals;
+      }
+    } catch (e) {
+      console.error('Supabase load failed, using localStorage:', e);
     }
-  } catch (e) {
-    // Fallback to localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('goal-tracker-goals');
-      if (stored) return JSON.parse(stored);
-    }
+  }
+  // Fallback to localStorage
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('goal-tracker-goals');
+    if (stored) return JSON.parse(stored);
   }
   return [];
 }
 
 export async function deleteGoalFromSupabase(goalId: string): Promise<void> {
-  try {
-    await supabase.from('goals').delete().eq('id', goalId);
-  } catch (e) {
-    // silent
+  const sb = getSupabase();
+  if (sb) {
+    try {
+      await sb.from('goals').delete().eq('id', goalId);
+    } catch (e) {
+      console.error('Supabase delete failed:', e);
+    }
   }
 }
