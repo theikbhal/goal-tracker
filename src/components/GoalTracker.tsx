@@ -453,6 +453,17 @@ function GoalDetail({
             </tbody>
           </table>
         </div>
+        <div className="mt-3 rounded border border-dashed border-gray-300 p-3 text-xs text-gray-500">
+          <p className="mb-1 font-semibold text-gray-700">How to read this table:</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li><strong>Weeks</strong> — The 4 weeks in that month (e.g. W1–W4 = January)</li>
+            <li><strong>Plan %</strong> — Expected target range for the month (e.g. 2.5% → 10%)</li>
+            <li><strong>Daily Target</strong> — How many units/day you should aim for</li>
+            <li><strong>Done</strong> — Weeks completed out of 4 (4/4 = perfect month)</li>
+            <li><strong>Skipped</strong> — Rest weeks used (max 1/month, 12/year)</li>
+            <li><strong>Note</strong> — Weekly notes auto-collected here</li>
+          </ul>
+        </div>
       </div>
 
       <div>
@@ -515,6 +526,22 @@ function GoalDetail({
               })}
             </tbody>
           </table>
+        </div>
+        <div className="mt-3 rounded border border-dashed border-gray-300 p-3 text-xs text-gray-500">
+          <p className="mb-1 font-semibold text-gray-700">How to read this table:</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li><strong>Week</strong> — Week number from W1 to W52</li>
+            <li><strong>Plan %</strong> — Target percentage for that week (starts at 2.5%, increases 2.5%/week)</li>
+            <li><strong>Daily Target</strong> — Calculated daily goal (target × plan %)</li>
+            <li><strong>Status</strong> — Done (completed), Skipped (rest week), Pending (not yet), → Current (this week)</li>
+            <li><strong>Note</strong> — Add notes via the Notes button above</li>
+          </ul>
+          <p className="mt-2 font-semibold text-gray-700">Actions:</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li><strong>Complete Week</strong> — Mark this week as done</li>
+            <li><strong>Skip Week</strong> — Use a rest week (max 1/month)</li>
+            <li><strong>Notes</strong> — Add observations, motivation, or reminders</li>
+          </ul>
         </div>
       </div>
     </div>
