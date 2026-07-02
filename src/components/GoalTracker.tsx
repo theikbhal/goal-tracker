@@ -379,30 +379,143 @@ function GoalDetail({
         </div>
       )}
 
+      <div className="mb-8">
+        <h4 className="mb-2 text-sm font-semibold">Monthly Overview (M1 - M12)</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left">
+                <th className="py-2 pr-2 font-semibold">Month</th>
+                <th className="py-2 px-2 font-semibold">Weeks</th>
+                <th className="py-2 px-2 font-semibold">Plan %</th>
+                <th className="py-2 px-2 font-semibold">Daily Target</th>
+                <th className="py-2 px-2 font-semibold">Done</th>
+                <th className="py-2 px-2 font-semibold">Skipped</th>
+                <th className="py-2 pl-2 font-semibold">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
+                const startWeek = (month - 1) * 4 + 1;
+                const endWeek = Math.min(month * 4, TOTAL_WEEKS);
+                const monthWeeks = goal.weeklyProgress.filter(
+                  (w) => w.weekNumber >= startWeek && w.weekNumber <= endWeek
+                );
+                const completedCount = monthWeeks.filter((w) => w.completed).length;
+                const skippedCount = monthWeeks.filter((w) => w.skipped).length;
+                const firstWeekPct = calculateWeeklyTarget(startWeek);
+                const lastWeekPct = calculateWeeklyTarget(endWeek);
+                const firstDayTarget = Math.round((goal.target * firstWeekPct) / 100);
+                const lastDayTarget = Math.round((goal.target * lastWeekPct) / 100);
+
+                const isCurrentMonth =
+                  progress.currentWeek + 1 >= startWeek &&
+                  progress.currentWeek + 1 <= endWeek;
+
+                let monthNotes = monthWeeks
+                  .filter((w) => w.note && w.note !== 'Skipped')
+                  .map((w) => `W${w.weekNumber}: ${w.note}`)
+                  .join('; ');
+
+                return (
+                  <tr
+                    key={month}
+                    className={`border-b border-gray-100 transition-colors ${
+                      isCurrentMonth ? 'bg-gray-50 font-medium' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <td className="py-2 pr-2 font-mono text-xs">M{month}</td>
+                    <td className="py-2 px-2 font-mono text-xs text-gray-600">
+                      W{startWeek}–W{endWeek}
+                    </td>
+                    <td className="py-2 px-2 font-mono text-xs text-gray-600">
+                      {firstWeekPct}%{firstWeekPct !== lastWeekPct ? ` → ${lastWeekPct}%` : ''}
+                    </td>
+                    <td className="py-2 px-2 font-mono text-xs">
+                      {firstDayTarget.toLocaleString()}{firstDayTarget !== lastDayTarget ? ` → ${lastDayTarget.toLocaleString()}` : ''}
+                    </td>
+                    <td className="py-2 px-2 text-xs">
+                      <span className={completedCount === 4 ? 'font-semibold' : 'text-gray-600'}>
+                        {completedCount}/4
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-xs">
+                      <span className={skippedCount > 0 ? 'text-gray-500' : 'text-gray-300'}>
+                        {skippedCount}
+                      </span>
+                    </td>
+                    <td className="py-2 pl-2 text-xs max-w-[160px] truncate text-gray-500">
+                      {monthNotes || '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div>
-        <h4 className="mb-2 text-sm font-semibold">Week History</h4>
-        {goal.weeklyProgress.length === 0 ? (
-          <p className="text-sm text-gray-500">No weeks recorded yet.</p>
-        ) : (
-          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8 md:grid-cols-13">
-            {goal.weeklyProgress.map((week) => (
-              <button
-                key={week.weekNumber}
-                onClick={() => onToggleComplete(week.weekNumber)}
-                className={`aspect-square rounded text-xs font-medium flex items-center justify-center transition-all ${
-                  week.skipped
-                    ? 'bg-gray-200 text-gray-500'
-                    : week.completed
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-                title={`Week ${week.weekNumber}: ${week.percentage}%${week.skipped ? ' (Skipped)' : ''}`}
-              >
-                {week.weekNumber}
-              </button>
-            ))}
-          </div>
-        )}
+        <h4 className="mb-2 text-sm font-semibold">Weekly Breakdown (W1 - W52)</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left">
+                <th className="py-2 pr-2 font-semibold">Week</th>
+                <th className="py-2 px-2 font-semibold">Plan %</th>
+                <th className="py-2 px-2 font-semibold">Daily Target</th>
+                <th className="py-2 px-2 font-semibold">Status</th>
+                <th className="py-2 pl-2 font-semibold">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: TOTAL_WEEKS }, (_, i) => i + 1).map((weekNum) => {
+                const plannedPct = calculateWeeklyTarget(weekNum);
+                const dayTarget = Math.round((goal.target * plannedPct) / 100);
+                const entry = goal.weeklyProgress.find((w) => w.weekNumber === weekNum);
+                const isCurrent = weekNum === progress.currentWeek + 1;
+
+                let status = 'Pending';
+                let statusClass = 'text-gray-400';
+                if (entry?.skipped) {
+                  status = 'Skipped';
+                  statusClass = 'text-gray-500';
+                } else if (entry?.completed) {
+                  status = 'Done';
+                  statusClass = 'font-semibold';
+                } else if (isCurrent && !isComplete) {
+                  status = '→ Current';
+                  statusClass = 'font-semibold';
+                }
+
+                return (
+                  <tr
+                    key={weekNum}
+                    className={`border-b border-gray-100 transition-colors ${
+                      entry?.completed ? 'bg-black text-white' : isCurrent ? 'bg-gray-50' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <td className={`py-1.5 pr-2 font-mono text-xs ${entry?.completed ? 'text-white' : 'text-gray-900'}`}>
+                      W{weekNum}
+                    </td>
+                    <td className={`py-1.5 px-2 font-mono text-xs ${entry?.completed ? 'text-white' : 'text-gray-600'}`}>
+                      {plannedPct}%
+                    </td>
+                    <td className={`py-1.5 px-2 font-mono text-xs ${entry?.completed ? 'text-white' : 'text-gray-900'}`}>
+                      {dayTarget.toLocaleString()}
+                    </td>
+                    <td className={`py-1.5 px-2 text-xs ${statusClass}`}>
+                      {status}
+                    </td>
+                    <td className={`py-1.5 pl-2 text-xs max-w-[120px] truncate ${entry?.completed ? 'text-white' : 'text-gray-500'}`}>
+                      {entry?.note || ''}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
