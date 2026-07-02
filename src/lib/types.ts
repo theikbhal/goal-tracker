@@ -5,14 +5,22 @@ export interface Goal {
   unit: string;
   startDate: string;
   weeklyProgress: WeekEntry[];
+  dailyProgress: DayEntry[];
+  monthNotes: { [month: number]: string };
   notes: string;
-  color: string;
 }
 
 export interface WeekEntry {
   weekNumber: number;
   percentage: number;
   skipped: boolean;
+  completed: boolean;
+  note: string;
+}
+
+export interface DayEntry {
+  date: string;
+  actual: number;
   completed: boolean;
   note: string;
 }
