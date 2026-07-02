@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Goal Tracker - 2.5% Weekly Growth Method
 
-## Getting Started
+A minimalistic goal-tracking web application that uses the 2.5% method to help you build habits gradually.
 
-First, run the development server:
+## Features
+
+- **2.5% Weekly Increase**: Start at 2.5% of your target, increase by 2.5% each week
+- **Skip Weeks**: Skip up to 1 week per month (12 per year)
+- **Multiple Goals**: Track Zikir, Steps, YT Shorts Review, and custom goals
+- **Search**: Quickly find goals by name
+- **Notes**: Add notes to any goal
+- **Mobile Responsive**: Works on all devices
+- **Local Storage**: All data stays in your browser
+
+## Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Examples
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Goal | Target | Week 1 | Week 20 | Week 40 |
+|------|--------|--------|---------|---------|
+| Zikir | 12,000/day | 300 | 6,000 | 12,000 |
+| Steps | 12,000/day | 300 | 6,000 | 12,000 |
+| YT Shorts | 1,200/day | 30 | 600 | 1,200 |
 
-## Learn More
+## How It Works
 
-To learn more about Next.js, take a look at the following resources:
+1. Choose your daily target
+2. Week 1: Start at 2.5% of target
+3. Each week: Increase by 2.5%
+4. Week 40: Reach 100% of target
+5. Skip weeks: Up to 1/month for rest/travel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Local Storage
 
-## Deploy on Vercel
+## Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/goal-tracker)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
